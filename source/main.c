@@ -1,6 +1,5 @@
-#ifdef PS4
-#include "ps4.h"
-#endif
+#include <ps4.h>
+#include <file.h>
 
 int _main(struct thread *td) {
     

@@ -1,14 +1,24 @@
 LIBPS4	:= $(PS4SDK)/libPS4
 
-CC	:= gcc -DPS4
+CC	:= gcc
 OBJCOPY	:= objcopy
+RM	:= rm
 ODIR	:= build
 SDIR	:= source
-IDIRS	:= -I$(LIBPS4)/include -Iinclude
+IDIR	:= include
+IDIRS	:= -I$(LIBPS4)/include -I$(IDIR)
 LDIRS	:= -L$(LIBPS4)
 MAPFILE := $(shell basename "$(CURDIR)").map
-CFLAGS	:= $(IDIRS) -O3 -std=c11 -ffunction-sections -fdata-sections -fno-builtin -nostartfiles -nostdlib -Wall -Wextra -Wstrict-aliasing -masm=intel -march=btver2 -mtune=btver2 -m64 -mabi=sysv -mcmodel=small -fpie -fPIC
-LFLAGS	:= $(LDIRS) -Xlinker -T $(LIBPS4)/linker.x -Xlinker -Map="$(MAPFILE)" -Wl,--build-id=none -Wl,--gc-sections
+
+# Compiler flags
+OPTIMIZATION := -Os
+STANDARDS    := -std=c11 -fno-builtin -nostartfiles -nostdlib
+WARNINGS     := -Wno-unused-const-variable -Wall -Wextra # -Werror
+ARCH_FLAGS   := -masm=intel -march=btver2 -mtune=btver2 -m64 -mabi=sysv -mcmodel=small -fpie
+CFLAGS       := $(IDIRS) $(OPTIMIZATION) $(STANDARDS) $(WARNINGS) $(ARCH_FLAGS) -ffunction-sections -fdata-sections
+
+LFLAGS	:= $(LDIRS) -Xlinker -T $(LIBPS4)/linker.x -Xlinker -Map=$(MAPFILE) -Wl,--build-id=none -Wl,--gc-sections -Wl,-z,noexecstack
+
 CFILES	:= $(wildcard $(SDIR)/*.c)
 SFILES	:= $(wildcard $(SDIR)/*.s)
 OBJS	:= $(patsubst $(SDIR)/%.c, $(ODIR)/%.o, $(CFILES)) $(patsubst $(SDIR)/%.s, $(ODIR)/%.o, $(SFILES))
@@ -34,4 +44,4 @@ $(ODIR):
 .PHONY: clean
 
 clean:
-	rm -rf "$(TARGET)" "$(MAPFILE)" $(ODIR)
+	@$(RM) -rf "$(TARGET)" "$(MAPFILE)" $(ODIR)
